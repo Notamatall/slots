@@ -3,7 +3,7 @@ import * as PIXI from "pixi.js";
 import "./SlotMachine.css";
 
 // Type definitions
-interface Symbol {
+interface SlotSymbol {
   emoji: string;
   value: number;
   name: string;
@@ -13,7 +13,7 @@ interface Symbol {
 
 interface SymbolSprite {
   sprite: PIXI.Text;
-  data: Symbol;
+  data: SlotSymbol;
 }
 
 interface Reel {
@@ -29,12 +29,12 @@ interface Reel {
 interface WinLine {
   type: "row" | "column" | "diagonal";
   index: number;
-  symbols: Symbol[];
+  symbols: SlotSymbol[];
   winAmount: number;
 }
 
-// Symbol definitions
-const SYMBOLS: Record<string, Symbol> = {
+// SlotSymbol definitions
+const SYMBOLS: Record<string, SlotSymbol> = {
   CHERRY: { emoji: "🍒", value: 1, name: "Cherry" },
   LEMON: { emoji: "🍋", value: 2, name: "Lemon" },
   ORANGE: { emoji: "🍊", value: 3, name: "Orange" },
@@ -46,8 +46,8 @@ const SYMBOLS: Record<string, Symbol> = {
   SCATTER: { emoji: "💰", value: 0, name: "Scatter", isScatter: true },
 };
 
-const SYMBOL_ARRAY: Symbol[] = Object.values(SYMBOLS);
-const REGULAR_SYMBOLS: Symbol[] = SYMBOL_ARRAY.filter(
+const SYMBOL_ARRAY: SlotSymbol[] = Object.values(SYMBOLS);
+const REGULAR_SYMBOLS: SlotSymbol[] = SYMBOL_ARRAY.filter(
   (s) => !s.isWild && !s.isScatter
 );
 
@@ -77,14 +77,14 @@ const SlotMachine: React.FC = () => {
   const [autoSpin, setAutoSpin] = useState<boolean>(false);
 
   // Helper functions
-  const getRandomSymbol = (): Symbol => {
+  const getRandomSymbol = (): SlotSymbol => {
     const rand = Math.random();
     if (rand < 0.05) return SYMBOLS.WILD;
     if (rand < 0.1) return SYMBOLS.SCATTER;
     return REGULAR_SYMBOLS[Math.floor(Math.random() * REGULAR_SYMBOLS.length)];
   };
 
-  const createSymbol = (symbolData: Symbol): PIXI.Text => {
+  const createSymbol = (symbolData: SlotSymbol): PIXI.Text => {
     const style = new PIXI.TextStyle({
       fontSize: 50,
       fill: symbolData.isWild
@@ -319,10 +319,10 @@ const SlotMachine: React.FC = () => {
     });
   };
 
-  const getSymbolGrid = (): (Symbol | null)[][] => {
-    const grid: (Symbol | null)[][] = [];
+  const getSymbolGrid = (): (SlotSymbol | null)[][] => {
+    const grid: (SlotSymbol | null)[][] = [];
     for (let row = 0; row < ROW_COUNT; row++) {
-      const rowSymbols: (Symbol | null)[] = [];
+      const rowSymbols: (SlotSymbol | null)[] = [];
       reelsRef.current.forEach((reel) => {
         const targetY = row * SYMBOL_SIZE;
         let closestSymbol: SymbolSprite | null = null;
@@ -344,10 +344,10 @@ const SlotMachine: React.FC = () => {
     return grid;
   };
 
-  const checkLine = (symbols: (Symbol | null)[]): number => {
+  const checkLine = (symbols: (SlotSymbol | null)[]): number => {
     if (!symbols || symbols.length !== 5) return 0;
 
-    const validSymbols = symbols.filter((s) => s !== null) as Symbol[];
+    const validSymbols = symbols.filter((s) => s !== null) as SlotSymbol[];
     if (validSymbols.length !== 5) return 0;
 
     let matchSymbol = validSymbols[0];
@@ -408,7 +408,7 @@ const SlotMachine: React.FC = () => {
         winLines.push({
           type: "row",
           index: row,
-          symbols: grid[row].filter((s) => s !== null) as Symbol[],
+          symbols: grid[row].filter((s) => s !== null) as SlotSymbol[],
           winAmount: lineWin * bet,
         });
       }
@@ -416,7 +416,7 @@ const SlotMachine: React.FC = () => {
 
     // Check vertical lines
     for (let col = 0; col < REEL_COUNT; col++) {
-      const column: (Symbol | null)[] = [];
+      const column: (SlotSymbol | null)[] = [];
       for (let row = 0; row < ROW_COUNT; row++) {
         column.push(grid[row][col]);
       }
@@ -426,15 +426,15 @@ const SlotMachine: React.FC = () => {
         winLines.push({
           type: "column",
           index: col,
-          symbols: column.filter((s) => s !== null) as Symbol[],
+          symbols: column.filter((s) => s !== null) as SlotSymbol[],
           winAmount: lineWin * bet,
         });
       }
     }
 
     // Check diagonals
-    const diagonal1: (Symbol | null)[] = [];
-    const diagonal2: (Symbol | null)[] = [];
+    const diagonal1: (SlotSymbol | null)[] = [];
+    const diagonal2: (SlotSymbol | null)[] = [];
     for (let i = 0; i < ROW_COUNT; i++) {
       diagonal1.push(grid[i][i]);
       diagonal2.push(grid[i][ROW_COUNT - 1 - i]);
@@ -446,7 +446,7 @@ const SlotMachine: React.FC = () => {
       winLines.push({
         type: "diagonal",
         index: 0,
-        symbols: diagonal1.filter((s) => s !== null) as Symbol[],
+        symbols: diagonal1.filter((s) => s !== null) as SlotSymbol[],
         winAmount: diag1Win * bet,
       });
     }
@@ -457,7 +457,7 @@ const SlotMachine: React.FC = () => {
       winLines.push({
         type: "diagonal",
         index: 1,
-        symbols: diagonal2.filter((s) => s !== null) as Symbol[],
+        symbols: diagonal2.filter((s) => s !== null) as SlotSymbol[],
         winAmount: diag2Win * bet,
       });
     }
